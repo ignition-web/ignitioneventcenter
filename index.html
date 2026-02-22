@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ignition Event Center</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --gold: #B8892A;
+      --gold-light: #D4A84B;
+      --dark: #2C2416;
+      --dark-2: #3A3020;
+      --dark-3: #453A28;
+      --off-white: #F5F0E8;
+      --muted: #A09070;
+      --text: #E8DFC8;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--dark);
+      color: var(--text);
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 300;
+      overflow-x: hidden;
+    }
+
+    /* ── NAVBAR ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.2rem 3rem;
+      background: rgba(13,13,13,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(201,168,76,0.15);
+      transition: background 0.3s;
+    }
+    .nav-logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.4rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      color: var(--gold);
+      text-decoration: none;
+      text-transform: uppercase;
+    }
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+    }
+    .nav-links a {
+      color: var(--text);
+      text-decoration: none;
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      position: relative;
+      transition: color 0.3s;
+    }
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -4px; left: 0;
+      width: 0; height: 1px;
+      background: var(--gold);
+      transition: width 0.3s;
+    }
+    .nav-links a:hover { color: var(--gold); }
+    .nav-links a:hover::after { width: 100%; }
+
+    .nav-menu-logo { display: none; }
+
+    /* show logo inside mobile menu */
+    @media (max-width: 768px) {
+      .nav-menu-logo { display: block; }
+    }
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 4px;
+      z-index: 1000;
+    }
+    .hamburger span {
+      display: block;
+      width: 24px;
+      height: 1.5px;
+      background: var(--gold);
+      transition: all 0.3s;
+    }
+    .hamburger.open span:nth-child(1) { transform: rotate(45deg) translate(5px,5px); }
+    .hamburger.open span:nth-child(2) { opacity: 0; }
+    .hamburger.open span:nth-child(3) { transform: rotate(-45deg) translate(5px,-5px); }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      overflow: hidden;
+    }
+    .hero-slider { position: absolute; inset: 0; }
+    .hero-slide {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      opacity: 0;
+      transition: opacity 1.5s ease;
+    }
+    .hero-slide.active { opacity: 1; }
+    .hero-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, rgba(13,13,13,0.4) 0%, rgba(13,13,13,0.7) 60%, var(--dark) 100%);
+    }
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      animation: fadeUp 1.2s ease both;
+      padding: 0 1.5rem;
+    }
+    .hero-logo { margin-bottom: 1.5rem; margin-top: 0; padding-top: 6rem; }
+    .hero-logo img {
+      width: clamp(220px, 40vw, 450px);
+      height: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 2px 12px rgba(0,0,0,0.5));
+    }
+    .hero-tag {
+      font-size: 0.65rem;
+      letter-spacing: 0.4em;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+    }
+    .hero h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.5rem, 8vw, 7rem);
+      font-weight: 300;
+      line-height: 1.05;
+      color: var(--off-white);
+      letter-spacing: 0.04em;
+    }
+    .hero h1 em { font-style: italic; color: var(--gold-light); }
+    .hero-sub {
+      margin-top: 1.5rem;
+      font-size: clamp(0.75rem, 2vw, 0.85rem);
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      max-width: 480px;
+      line-height: 1.8;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .hero-cta {
+      margin-top: 2.5rem;
+      display: inline-block;
+      padding: 0.85rem 2.5rem;
+      border: 1px solid var(--gold);
+      color: var(--gold);
+      text-decoration: none;
+      font-size: 0.7rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      transition: all 0.3s;
+    }
+    .hero-cta:hover { background: var(--gold); color: var(--dark); }
+
+    /* ── SECTION BASE ── */
+    section { padding: 7rem 0; }
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 2rem; }
+    .section-label {
+      font-size: 0.62rem;
+      letter-spacing: 0.4em;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+    .section-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1.8rem, 5vw, 3.5rem);
+      font-weight: 300;
+      color: var(--off-white);
+      line-height: 1.15;
+      margin-bottom: 1.2rem;
+    }
+    .section-title em { font-style: italic; color: var(--gold-light); }
+    .section-desc {
+      font-size: clamp(0.78rem, 2vw, 0.85rem);
+      line-height: 1.9;
+      color: var(--muted);
+      max-width: 520px;
+    }
+    .gold-line { width: 50px; height: 1px; background: var(--gold); margin-bottom: 2rem; }
+
+    /* ── CAROUSEL ── */
+    .carousel { position: relative; overflow: hidden; border-radius: 2px; }
+    .carousel-track {
+      display: flex;
+      transition: transform 0.6s cubic-bezier(0.77, 0, 0.18, 1);
+    }
+    .carousel-track img { min-width: 100%; height: 480px; object-fit: cover; display: block; }
+    .carousel-btn {
+      position: absolute;
+      top: 50%; transform: translateY(-50%);
+      background: rgba(13,13,13,0.6);
+      border: 1px solid rgba(201,168,76,0.4);
+      color: var(--gold);
+      width: 44px; height: 44px;
+      cursor: pointer; font-size: 1rem;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.3s;
+      backdrop-filter: blur(4px);
+    }
+    .carousel-btn:hover { background: var(--gold); color: var(--dark); }
+    .carousel-btn.prev { left: 1rem; }
+    .carousel-btn.next { right: 1rem; }
+    .carousel-dots { display: flex; justify-content: center; gap: 8px; margin-top: 1rem; }
+    .carousel-dots span {
+      width: 24px; height: 2px;
+      background: var(--dark-3);
+      cursor: pointer; transition: background 0.3s;
+    }
+    .carousel-dots span.active { background: var(--gold); }
+
+    /* ── LAYOUT ── */
+    .split { display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center; }
+    .split.reverse { direction: rtl; }
+    .split.reverse > * { direction: ltr; }
+
+    /* ── DIVIDER ── */
+    .divider {
+      height: 1px;
+      background: linear-gradient(to right, transparent, rgba(201,168,76,0.3), transparent);
+      margin: 0 2rem;
+    }
+
+    /* ── HOURS ── */
+    #contact { background: var(--dark-2); }
+    .hours-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 2px; margin: 3rem 0;
+      border: 1px solid rgba(201,168,76,0.15);
+    }
+    .hours-item {
+      padding: 2rem 1.5rem;
+      border-right: 1px solid rgba(201,168,76,0.1);
+      background: var(--dark-3);
+      transition: background 0.3s;
+    }
+    .hours-item:last-child { border-right: none; }
+    .hours-item:hover { background: #252525; }
+    .hours-day { font-size: 0.62rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.6rem; }
+    .hours-time { font-family: 'Cormorant Garamond', serif; font-size: clamp(1.2rem, 3vw, 1.6rem); color: var(--off-white); font-weight: 300; }
+    .notice {
+      font-size: 0.75rem; letter-spacing: 0.08em; color: var(--muted);
+      background: rgba(201,168,76,0.05);
+      border-left: 2px solid var(--gold);
+      padding: 1rem 1.5rem; margin-top: 2rem; line-height: 1.8;
+    }
+
+    /* ── CONTACT ── */
+    .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; margin-top: 3rem; }
+    .contact-item {
+      padding: 2rem;
+      border: 1px solid rgba(201,168,76,0.12);
+      background: var(--dark-3);
+      transition: border-color 0.3s;
+    }
+    .contact-item:hover { border-color: rgba(201,168,76,0.4); }
+    .contact-label { font-size: 0.6rem; letter-spacing: 0.35em; color: var(--gold); text-transform: uppercase; margin-bottom: 0.8rem; }
+    .contact-value { font-family: 'Cormorant Garamond', serif; font-size: clamp(1rem, 2.5vw, 1.3rem); color: var(--off-white); }
+    .contact-value a { color: inherit; text-decoration: none; }
+    .contact-value a:hover { color: var(--gold-light); }
+
+    /* ── FOOTER ── */
+    footer { background: var(--dark); border-top: 1px solid rgba(201,168,76,0.1); padding: 2.5rem; text-align: center; }
+    footer .footer-logo { font-family: 'Cormorant Garamond', serif; font-size: clamp(1rem, 3vw, 1.2rem); color: var(--gold); letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 0.8rem; }
+    footer p { font-size: clamp(0.6rem, 1.5vw, 0.7rem); letter-spacing: 0.12em; color: var(--muted); }
+    footer span { color: var(--gold); }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .reveal { opacity: 0; transform: translateY(40px); transition: opacity 0.8s ease, transform 0.8s ease; }
+    .reveal.visible { opacity: 1; transform: none; }
+
+    /* ── SWIM PHOTO ── */
+    .swimm-photo { width: 100%; max-width: 591px; margin: 0 auto; }
+    .swimm-photo img { width: 100%; height: auto; aspect-ratio: 591 / 1280; object-fit: cover; display: block; border-radius: 2px; }
+
+    /* ── POOL BADGE ── */
+    .pool-badge {
+      display: inline-block; margin-top: 1.2rem;
+      font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--gold); border: 1px solid rgba(201,168,76,0.3); padding: 0.4rem 0.9rem;
+    }
+
+    /* ── MENU ── */
+    .menu-wrapper { margin-top: 3rem; }
+    .menu-tabs { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 2rem; }
+    .menu-tab {
+      background: var(--dark-3);
+      border: 1px solid rgba(201,168,76,0.2);
+      color: var(--muted);
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.68rem; font-weight: 500;
+      letter-spacing: 0.15em; text-transform: uppercase;
+      padding: 0.65rem 1.2rem; cursor: pointer; transition: all 0.3s;
+    }
+    .menu-tab:hover { border-color: var(--gold); color: var(--gold); }
+    .menu-tab.active { background: var(--gold); border-color: var(--gold); color: var(--dark); }
+    .menu-panel { display: none; }
+    .menu-panel.active { display: block; }
+    .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 1.2rem; }
+    .menu-card {
+      background: var(--dark-3);
+      border: 1px solid rgba(201,168,76,0.12);
+      padding: 1.5rem 1.2rem;
+      transition: border-color 0.3s, transform 0.3s;
+    }
+    .menu-card:hover { border-color: var(--gold); transform: translateY(-3px); }
+    .menu-icon { font-size: 2rem; display: block; margin-bottom: 0.8rem; }
+    .menu-card h4 { font-family: 'Cormorant Garamond', serif; font-size: 1.15rem; color: var(--off-white); margin-bottom: 0.5rem; font-weight: 400; }
+    .menu-card p { font-size: 0.75rem; color: var(--muted); line-height: 1.7; }
+
+    /* ══════════════════════════════════════
+       MEDIA QUERIES
+    ══════════════════════════════════════ */
+
+    /* Large desktops (1200px+) */
+    @media (min-width: 1200px) {
+      .container { max-width: 1200px; }
+      .carousel-track img { height: 540px; }
+    }
+
+    /* Tablets landscape (1024px) */
+    @media (max-width: 1024px) {
+      nav { padding: 1rem 2rem; }
+      .split { gap: 3rem; }
+      .carousel-track img { height: 380px; }
+      section { padding: 6rem 0; }
+      .swimm-photo { max-width: 420px; }
+    }
+
+    /* Tablets portrait (768px) */
+    @media (max-width: 768px) {
+      nav { padding: 1rem 1.5rem; }
+      .hero-logo img { width: clamp(160px, 38vw, 360px); }
+      .nav-logo { font-size: 1.1rem; }
+      .hamburger { display: flex; }
+      .nav-links {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        width: 100%; height: 100vh;
+        background: rgba(13,13,13,0.97);
+        flex-direction: column;
+        align-items: center; justify-content: center;
+        gap: 2.5rem;
+        z-index: 999;
+        clip-path: circle(0% at calc(100% - 2.5rem) 2.5rem);
+        transition: clip-path 0.6s cubic-bezier(0.77, 0, 0.18, 1);
+        pointer-events: none;
+      }
+      .nav-links.open {
+        clip-path: circle(150% at calc(100% - 2.5rem) 2.5rem);
+        pointer-events: all;
+      }
+      .nav-menu-logo { list-style: none; margin-bottom: 1rem; }
+      .nav-menu-logo img {
+        width: 170px;
+        height: auto; object-fit: contain;
+        filter: drop-shadow(0 2px 10px rgba(0,0,0,0.5));
+      }
+      .nav-links a { font-size: 1.4rem; letter-spacing: 0.2em; }
+
+      .split { grid-template-columns: 1fr; gap: 2.5rem; }
+      .split.reverse { direction: ltr; }
+      .container { padding: 0 1.5rem; }
+      section { padding: 4.5rem 0; }
+      .menu-grid { grid-template-columns: 1fr 1fr; }
+
+      .hero { height: 100svh; }
+      .hero-cta { padding: 0.75rem 2rem; }
+
+      .carousel-track img { height: 300px; }
+      .carousel-btn { width: 36px; height: 36px; font-size: 0.85rem; }
+
+      .hours-grid { grid-template-columns: 1fr 1fr; }
+      .hours-item { padding: 1.5rem 1rem; }
+
+      .contact-grid { grid-template-columns: 1fr; gap: 1.5rem; }
+      .contact-item { padding: 1.5rem; }
+
+      .divider { margin: 0 1.5rem; }
+      .swimm-photo { max-width: 320px; }
+    }
+
+    /* Mobile large (480px) */
+    @media (max-width: 480px) {
+      nav { padding: 0.9rem 1rem; }
+      .nav-logo { font-size: 0.95rem; letter-spacing: 0.08em; }
+
+      .hero { height: 100svh; }
+      .hero-logo img { width: clamp(130px, 55vw, 260px); }
+      .hero h1 { font-size: clamp(2rem, 10vw, 3rem); }
+      .hero-tag { font-size: 0.55rem; letter-spacing: 0.25em; }
+      .hero-sub { font-size: 0.72rem; padding: 0 0.5rem; }
+      .hero-cta { font-size: 0.6rem; padding: 0.7rem 1.5rem; letter-spacing: 0.18em; }
+
+      .section-label { font-size: 0.55rem; letter-spacing: 0.25em; }
+      .gold-line { margin-bottom: 1.2rem; }
+      section { padding: 3.5rem 0; }
+      .container { padding: 0 1rem; }
+
+      .carousel-track img { height: 230px; }
+      .carousel-btn { width: 32px; height: 32px; font-size: 0.75rem; }
+      .carousel-dots span { width: 16px; }
+
+      .hours-grid { grid-template-columns: 1fr; }
+      .hours-item { padding: 1.2rem 1rem; border-right: none; border-bottom: 1px solid rgba(201,168,76,0.1); }
+      .hours-item:last-child { border-bottom: none; }
+
+      .notice { font-size: 0.68rem; padding: 0.8rem 1rem; }
+      .split { gap: 2rem; }
+      .menu-grid { grid-template-columns: 1fr; }
+      .menu-tab { font-size: 0.6rem; padding: 0.55rem 0.9rem; }
+
+      footer { padding: 2rem 1rem; }
+      .pool-badge { font-size: 0.55rem; padding: 0.35rem 0.7rem; }
+      .swimm-photo { max-width: 240px; }
+    }
+
+    /* Mobile small (360px) */
+    @media (max-width: 360px) {
+      .hero-logo img { width: clamp(100px, 60vw, 200px); }
+      .nav-logo { font-size: 0.82rem; }
+      .hero h1 { font-size: clamp(1.7rem, 11vw, 2.5rem); }
+      .carousel-track img { height: 190px; }
+      .section-title { font-size: clamp(1.5rem, 8vw, 2rem); }
+      .contact-value { font-size: 0.95rem; }
+      .swimm-photo { max-width: 180px; }
+      .menu-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav id="navbar">
+  <a class="nav-logo" href="#">Ignition Event Center</a>
+  <ul class="nav-links" id="navLinks">
+    <li class="nav-menu-logo"><img src="BackgroundEraser_20241122_180148650.png" alt="Ignition Event Center Logo"></li>
+    <li><a href="#bar">Bar</a></li>
+    <li><a href="#pool">Pool</a></li>
+    <li><a href="#restaurant">Restaurant</a></li>
+    <li><a href="#apartment">Apartment</a></li>
+    <li><a href="#events">Events</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="hero-slider">
+    <div class="hero-slide active" style="background-image:url('IMG_7796.jpg')"></div>
+    <div class="hero-slide" style="background-image:url('IMG_7797.jpg')"></div>
+    <div class="hero-slide" style="background-image:url('IMG_7798.jpg')"></div>
+    <div class="hero-slide" style="background-image:url('IMG_7806.jpg')"></div>
+  </div>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <div class="hero-logo">
+      <img src="BackgroundEraser_20241122_180148650.png" alt="Ignition Event Center Logo">
+    </div>
+    <p class="hero-tag">Kuntunse · Satellite</p>
+    <h1>Where <em>Every</em><br>Moment Ignites</h1>
+    <p class="hero-sub">A pool, bar, restaurant, event space &amp; apartment — all in one stunning venue for your most memorable occasions.</p>
+    <a href="#bar" class="hero-cta">Explore the Venue</a>
+  </div>
+</section>
+
+<!-- BAR -->
+<section id="bar">
+  <div class="container">
+    <div class="split reveal">
+      <div>
+        <p class="section-label">01 — Bar &amp; Lounge</p>
+        <div class="gold-line"></div>
+        <h2 class="section-title">Sip, Savour &amp; <em>Unwind</em></h2>
+        <p class="section-desc">From fine gins and aged whiskeys to refreshing mocktails — our bar is stocked with all your favourites. Join us for happy hour specials and live music nights for an unforgettable evening.</p>
+      </div>
+      <div class="carousel">
+        <div class="carousel-track" id="barTrack">
+          <img src="IMG_7800.jpg" alt="Cocktail in stylish bar">
+          <img src="IMG_7803.jpg" alt="Bartender preparing a signature drink">
+          <img src="IMG-20241208-WA0011.jpg" alt="Cozy bar interior with warm lighting">
+          <img src="IMG_7804.jpg" alt="Bar counter with premium spirits">
+          <img src="IMG_7801.jpg" alt="Lively bar atmosphere">
+          <img src="IMG_7805.jpg" alt="Outdoor bar seating area">
+        </div>
+        <button class="carousel-btn prev" onclick="slide('barTrack','barDots',-1)">&#8592;</button>
+        <button class="carousel-btn next" onclick="slide('barTrack','barDots',1)">&#8594;</button>
+        <div class="carousel-dots" id="barDots"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- POOL -->
+<section id="pool">
+  <div class="container">
+    <div class="split reverse reveal">
+      <div>
+        <p class="section-label">02 — Swimming Pool</p>
+        <div class="gold-line"></div>
+        <h2 class="section-title">Crystal Clear,<br><em>Endlessly</em> Refreshing</h2>
+        <p class="section-desc">This sleek rectangular pool features sparkling water and discreet submerged evening lights that cast a captivating glow. Convenient steps and a sturdy ladder ensure effortless access.</p>
+        <p class="pool-badge">&#9679; Pool closed Mondays for cleaning</p>
+      </div>
+      <div class="carousel">
+        <div class="carousel-track" id="poolTrack">
+          <img src="IMG_7806.jpg" alt="Pool with lounge chairs">
+          <img src="IMG_7798.jpg" alt="Pool at sunset">
+          <img src="IMG-20241122-WA0005.jpg" alt="Swimming lesson with coach">
+          <img src="IMG-20241208-WA0012.jpg" alt="Kids learning to swim">
+        </div>
+        <button class="carousel-btn prev" onclick="slide('poolTrack','poolDots',-1)">&#8592;</button>
+        <button class="carousel-btn next" onclick="slide('poolTrack','poolDots',1)">&#8594;</button>
+        <div class="carousel-dots" id="poolDots"></div>
+      </div>
+    </div>
+
+    <!-- Swimming Lessons -->
+    <div class="split reveal" style="margin-top:5rem;">
+      <div class="swimm-photo">
+        <img src="photo_2026-02-22_10-26-26.jpg" alt="Swimming lesson">
+      </div>
+      <div>
+        <p class="section-label">02b — Swimming Lessons</p>
+        <div class="gold-line"></div>
+        <h2 class="section-title">From <em>Beginner</em><br>to Pro</h2>
+        <p class="section-desc">Learn to swim or perfect your technique under the guidance of our experienced swim coach. Lessons available for kids and adults — you'll be a pro in no time.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- RESTAURANT -->
+<section id="restaurant">
+  <div class="container">
+    <div class="split reveal" style="grid-template-columns:1fr;">
+      <div style="text-align:center; max-width:600px; margin:0 auto;">
+        <p class="section-label">03 — Restaurant</p>
+        <div class="gold-line" style="margin:0 auto 2rem;"></div>
+        <h2 class="section-title">A Culinary <em>Journey</em><br>for Every Palate</h2>
+        <p class="section-desc" style="margin:0 auto;">From local delicacies like fufu, banku and tilapia, to international favourites — our kitchen, led by one of the city's finest chefs, promises a dining experience you won't forget.</p>
+      </div>
+      <div class="menu-wrapper">
+        <div class="menu-tabs">
+          <button class="menu-tab active" onclick="switchTab(event,'local')">🍲 Local Dishes</button>
+          <button class="menu-tab" onclick="switchTab(event,'rice')">🍚 Rice Dishes</button>
+          <button class="menu-tab" onclick="switchTab(event,'grill')">🔥 Grills &amp; Proteins</button>
+        </div>
+        <div class="menu-panel active" id="tab-local">
+          <div class="menu-grid">
+            <div class="menu-card"><span class="menu-icon">🍲</span><h4>Fufu &amp; Light Soup</h4><p>Cassava &amp; plantain fufu served with rich light soup and your choice of protein</p></div>
+            <div class="menu-card"><span class="menu-icon">🍲</span><h4>Fufu &amp; Palm Nut Soup</h4><p>Classic fufu paired with a hearty palm nut soup and assorted meat</p></div>
+            <div class="menu-card"><span class="menu-icon">🫓</span><h4>Banku &amp; Tilapia</h4><p>Fermented banku served with grilled whole tilapia and pepper sauce</p></div>
+            <div class="menu-card"><span class="menu-icon">🫓</span><h4>Banku &amp; Okro Stew</h4><p>Smooth banku with spiced okro stew and smoked fish or beef</p></div>
+            <div class="menu-card"><span class="menu-icon">🌽</span><h4>Kenkey &amp; Fried Fish</h4><p>Ga kenkey served with crispy fried fish, shito and fresh pepper</p></div>
+            <div class="menu-card"><span class="menu-icon">🥣</span><h4>Tuo Zaafi (TZ)</h4><p>Northern-style TZ served with ayoyo soup and smoked meat</p></div>
+          </div>
+        </div>
+        <div class="menu-panel" id="tab-rice">
+          <div class="menu-grid">
+            <div class="menu-card"><span class="menu-icon">🍛</span><h4>Jollof Rice</h4><p>Smoky party-style jollof rice served with fried chicken or beef</p></div>
+            <div class="menu-card"><span class="menu-icon">🍚</span><h4>Fried Rice</h4><p>Vegetable fried rice served with your choice of grilled or fried protein</p></div>
+            <div class="menu-card"><span class="menu-icon">🍚</span><h4>Plain Rice &amp; Stew</h4><p>White rice served with rich tomato stew and your choice of protein</p></div>
+            <div class="menu-card"><span class="menu-icon">🌿</span><h4>Waakye</h4><p>Rice and beans cooked together, served with spaghetti, wele, egg &amp; shito</p></div>
+            <div class="menu-card"><span class="menu-icon">🍛</span><h4>Coconut Rice</h4><p>Fragrant coconut rice served with grilled chicken or prawns</p></div>
+            <div class="menu-card"><span class="menu-icon">🍚</span><h4>Rice &amp; Groundnut Soup</h4><p>Steamed rice with creamy groundnut soup and assorted meat</p></div>
+          </div>
+        </div>
+        <div class="menu-panel" id="tab-grill">
+          <div class="menu-grid">
+            <div class="menu-card"><span class="menu-icon">🐟</span><h4>Grilled Tilapia</h4><p>Whole tilapia marinated in spices and grilled to perfection with chips</p></div>
+            <div class="menu-card"><span class="menu-icon">🍗</span><h4>Grilled Chicken</h4><p>Seasoned half chicken grilled over charcoal, served with coleslaw</p></div>
+            <div class="menu-card"><span class="menu-icon">🥩</span><h4>Beef Kebab</h4><p>Juicy beef skewers marinated in house spices, served with dipping sauce</p></div>
+            <div class="menu-card"><span class="menu-icon">🍖</span><h4>Spare Ribs</h4><p>Slow-cooked pork ribs glazed with smoky barbecue sauce and fries</p></div>
+            <div class="menu-card"><span class="menu-icon">🦐</span><h4>Grilled Prawns</h4><p>Jumbo prawns grilled with garlic butter and lemon, served with rice</p></div>
+            <div class="menu-card"><span class="menu-icon">🥩</span><h4>Suya Platter</h4><p>West African spiced beef suya served with sliced onions and yaji pepper</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- APARTMENT -->
+<section id="apartment">
+  <div class="container">
+    <div class="split reverse reveal">
+      <div>
+        <p class="section-label">04 — Apartment Stay</p>
+        <div class="gold-line"></div>
+        <h2 class="section-title">Comfort &amp; <em>Elegance</em><br>Under One Roof</h2>
+        <p class="section-desc">Stay in our modern apartment with spacious rooms, a fully equipped kitchen, high-speed internet, and stunning surroundings — everything you need for a truly relaxing retreat.</p>
+      </div>
+      <div class="carousel">
+        <div class="carousel-track" id="aptTrack">
+          <img src="photo_1_2025-05-28_17-49-38.jpg" alt="Apartment living room">
+          <img src="photo_2_2025-05-28_17-49-38.jpg" alt="Stylish bedroom">
+          <img src="photo_3_2025-05-28_17-49-38.jpg" alt="Modern kitchen">
+          <img src="photo_4_2025-05-28_17-49-38.jpg" alt="Apartment kitchen">
+        </div>
+        <button class="carousel-btn prev" onclick="slide('aptTrack','aptDots',-1)">&#8592;</button>
+        <button class="carousel-btn next" onclick="slide('aptTrack','aptDots',1)">&#8594;</button>
+        <div class="carousel-dots" id="aptDots"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- EVENTS -->
+<section id="events">
+  <div class="container">
+    <div class="split reveal">
+      <div>
+        <p class="section-label">05 — Event Space</p>
+        <div class="gold-line"></div>
+        <h2 class="section-title">Your <em>Perfect</em><br>Venue Awaits</h2>
+        <p class="section-desc">Whether it's a wedding, birthday, corporate gathering, or private party — our versatile event space features customisable seating and a dedicated stage to make your occasion truly flawless.</p>
+      </div>
+      <div class="carousel">
+        <div class="carousel-track" id="evtTrack">
+          <img src="20250602_083823.jpg" alt="Event space setup">
+          <img src="20250602_083422.jpg" alt="Stage for performances">
+          <img src="added 1.jpg" alt="Well-lit event space at night">
+          <img src="added 2.jpg" alt="Decorated event space">
+        </div>
+        <button class="carousel-btn prev" onclick="slide('evtTrack','evtDots',-1)">&#8592;</button>
+        <button class="carousel-btn next" onclick="slide('evtTrack','evtDots',1)">&#8594;</button>
+        <div class="carousel-dots" id="evtDots"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT & HOURS -->
+<section id="contact">
+  <div class="container">
+    <div class="reveal">
+      <p class="section-label">06 — Visit Us</p>
+      <div class="gold-line"></div>
+      <h2 class="section-title">Opening <em>Hours</em> &amp; Enquiries</h2>
+    </div>
+    <div class="hours-grid reveal">
+      <div class="hours-item">
+        <p class="hours-day">Monday – Saturday</p>
+        <p class="hours-time">10AM – 10PM</p>
+      </div>
+      <div class="hours-item">
+        <p class="hours-day">Sundays</p>
+        <p class="hours-time">1PM – 10PM</p>
+      </div>
+      <div class="hours-item">
+        <p class="hours-day">Public Holidays</p>
+        <p class="hours-time">10AM – 12AM</p>
+      </div>
+    </div>
+    <div class="notice reveal">
+      ⚠ Pool is closed on Mondays for cleaning, except on public holidays. &nbsp;|&nbsp; Food and drinks are not permitted inside the pool area.
+    </div>
+    <div class="contact-grid reveal">
+      <div class="contact-item">
+        <p class="contact-label">Phone</p>
+        <p class="contact-value">
+          <a href="tel:+233244488185">024 4488 185</a> &nbsp;/&nbsp;
+          <a href="tel:+233530361010">053 0361 010</a>
+        </p>
+      </div>
+      <div class="contact-item">
+        <p class="contact-label">Email</p>
+        <p class="contact-value">
+          <a href="mailto:ignitioneventcentre@gmail.com">ignitioneventcentre@gmail.com</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p class="footer-logo">Ignition Event Center</p>
+  <p>&copy; 2025 Ignition Event Center. All rights reserved. Designed with care by <span>J.A.K.E</span></p>
+</footer>
+
+<script>
+  /* ── HAMBURGER ── */
+  const hamburger = document.getElementById('hamburger');
+  const navLinks  = document.getElementById('navLinks');
+  hamburger.addEventListener('click', () => {
+    hamburger.classList.toggle('open');
+    navLinks.classList.toggle('open');
+  });
+  navLinks.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
+    hamburger.classList.remove('open');
+    navLinks.classList.remove('open');
+  }));
+
+  /* ── HERO SLIDER ── */
+  const heroSlides = document.querySelectorAll('.hero-slide');
+  let heroIdx = 0;
+  function nextHeroSlide() {
+    heroSlides[heroIdx].classList.remove('active');
+    heroIdx = (heroIdx + 1) % heroSlides.length;
+    heroSlides[heroIdx].classList.add('active');
+  }
+  if (heroSlides.length > 1) setInterval(nextHeroSlide, 4500);
+
+  /* ── CAROUSEL ── */
+  const carouselState = {};
+  function initCarousel(trackId, dotsId) {
+    const track  = document.getElementById(trackId);
+    const dotsEl = document.getElementById(dotsId);
+    if (!track || !dotsEl) return;
+    const imgs = track.querySelectorAll('img');
+    carouselState[trackId] = 0;
+    imgs.forEach((_, i) => {
+      const dot = document.createElement('span');
+      if (i === 0) dot.classList.add('active');
+      dot.addEventListener('click', () => goTo(trackId, dotsId, i));
+      dotsEl.appendChild(dot);
+    });
+  }
+  function goTo(trackId, dotsId, idx) {
+    const track  = document.getElementById(trackId);
+    const dotsEl = document.getElementById(dotsId);
+    const imgs   = track.querySelectorAll('img');
+    idx = (idx + imgs.length) % imgs.length;
+    carouselState[trackId] = idx;
+    track.style.transform = `translateX(-${idx * 100}%)`;
+    dotsEl.querySelectorAll('span').forEach((d, i) => d.classList.toggle('active', i === idx));
+  }
+  function slide(trackId, dotsId, dir) {
+    goTo(trackId, dotsId, (carouselState[trackId] || 0) + dir);
+  }
+  ['barTrack','poolTrack','aptTrack','evtTrack'].forEach(id => {
+    initCarousel(id, id.replace('Track','Dots'));
+  });
+
+  /* ── SCROLL REVEAL ── */
+  const revealEls = document.querySelectorAll('.reveal');
+  const observer  = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
+  }, { threshold: 0.12 });
+  revealEls.forEach(el => observer.observe(el));
+
+  /* ── MENU TABS ── */
+  function switchTab(e, tabId) {
+    document.querySelectorAll('.menu-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.menu-panel').forEach(p => p.classList.remove('active'));
+    e.currentTarget.classList.add('active');
+    document.getElementById('tab-' + tabId).classList.add('active');
+  }
+
+  /* ── STICKY NAV ── */
+  window.addEventListener('scroll', () => {
+    document.getElementById('navbar').style.background =
+      window.scrollY > 60 ? 'rgba(13,13,13,0.97)' : 'rgba(13,13,13,0.85)';
+  });
+</script>
+</body>
+</html>
